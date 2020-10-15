@@ -40,5 +40,7 @@ func (srv Web) Router() *mux.Router {
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(defaultDocRoot)))
 	router.PathPrefix("/static/").Handler(fs)
 
+	router.Handle("/", Middleware(http.HandlerFunc(srv.Index))).Methods("GET")
+
 	return router
 }
