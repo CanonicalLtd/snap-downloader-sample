@@ -1,0 +1,53 @@
+name: snap-downloader
+base: core18
+version: '0.1'
+summary: Keep a local cache of brand store snaps
+description: |
+  In some networks, downloaded snaps from each device is an expensive operation e.g. for
+  low-bandwidth networks such as a zigbee mesh. The downloader watches for snap updates
+  at a brand store and caches the files, creating deltas that can be distributed across
+  the network.
+
+grade: stable
+confinement: strict
+
+apps:
+  run:
+    command: bin/snap-downloader
+    daemon: simple
+    plugs:
+      - network
+      - network-bind
+
+parts:
+  react:
+    plugin: nil
+    source: .
+    override-build: |
+      # Install node and npm
+      curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+      export NVM_DIR="$HOME/.nvm"
+      . "$NVM_DIR/nvm.sh"
+      . "$NVM_DIR/bash_completion"
+      nvm install lts/*
+      nvm run node --version
+      cd webapp
+      npm install --unsafe-perm
+      npm run build
+      mkdir -p $SNAPCRAFT_PART_INSTALL/static/
+      cp -r build/static/css $SNAPCRAFT_PART_INSTALL/static/
+      cp -r build/static/js $SNAPCRAFT_PART_INSTALL/static/
+      cp -r build/static/images $SNAPCRAFT_PART_INSTALL/static/
+      cp build/* $SNAPCRAFT_PART_INSTALL/static/ || :
+    build-packages:
+      - curl
+      - python-minimal
+      - python-dev
+
+  application:
+    plugin: go
+    source: .
+    source-type: git
+    build-packages:
+      - gcc
+
