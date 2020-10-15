@@ -13,7 +13,7 @@ confinement: strict
 
 apps:
   run:
-    command: bin/snap-downloader
+    command: bin/run
     daemon: simple
     plugs:
       - network
@@ -49,4 +49,8 @@ parts:
     source: .
     build-packages:
       - gcc
+
+  bin:
+    source: launcher
+    plugin: dump
 
