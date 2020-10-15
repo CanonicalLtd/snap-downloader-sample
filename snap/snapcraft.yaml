@@ -47,7 +47,6 @@ parts:
   application:
     plugin: go
     source: .
-    source-type: git
     build-packages:
       - gcc
 
