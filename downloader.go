@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/slimjim777/snap-downloader/store"
-	"github.com/slimjim777/snap-downloader/web"
+	"github.com/slimjim777/snap-downloader/service/datastore/sqlite"
+	"github.com/slimjim777/snap-downloader/service/store"
+	"github.com/slimjim777/snap-downloader/service/web"
 	"log"
 	"os"
 )
@@ -15,7 +16,9 @@ func main() {
 	// the arguments are used to authenticate with the store and store the macaroon
 	parseArgs()
 
-	storeClient = store.NewStore()
+	// set up the dependency chain
+	db, _ := sqlite.NewDatabase()
+	storeClient = store.NewStore(db)
 
 	// Start the web service
 	srv := web.NewWebService(storeClient)
