@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -39,7 +40,8 @@ func (srv Web) LoginUser(w http.ResponseWriter, r *http.Request) {
 func (srv Web) Macaroon(w http.ResponseWriter, r *http.Request) {
 	headers, err := srv.Store.Macaroon()
 	if err != nil {
-		formatStandardResponse("auth", err.Error(), w)
+		log.Printf("Error retrieving macaroon: %v", err)
+		formatStandardResponse("auth", "No store macaroon found", w)
 		return
 	}
 
