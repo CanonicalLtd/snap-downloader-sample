@@ -23,16 +23,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"time"
-
 	"github.com/CanonicalLtd/serial-vault/service/log"
+	"net/http"
 
 	"gopkg.in/macaroon.v1"
 
-	"github.com/CanonicalLtd/serial-vault/datastore"
-
-	"github.com/snapcore/snapd/asserts"
 	"github.com/snapcore/snapd/overlord/auth"
 )
 
@@ -96,45 +91,6 @@ func LoginUser(username, password, otp string, permissions []string) (string, st
 	}
 
 	return macaroon, discharge, nil
-}
-
-func generateAccountKeyRequest(keyAuth KeyRegister, keypair datastore.Keypair) (string, error) {
-	// Create a self-signed account-key assertion
-	since := time.Now().AddDate(-1, 0, 0)
-	headers := map[string]interface{}{
-		"account-id":          keyAuth.AuthorityID,
-		"name":                keyAuth.KeyName,
-		"public-key-sha3-384": keypair.KeyID,
-		"since":               since.Format(time.RFC3339),
-	}
-
-	// Loads the keypair into the memory keystore
-	err := datastore.Environ.KeypairDB.LoadKeypair(keypair.AuthorityID, keypair.KeyID, keypair.SealedKey)
-	if err != nil {
-		log.Println("Error loading the keypair", err)
-		return "", err
-	}
-
-	// Get the public key as it is the body of the assertion
-	publicKey, err := datastore.Environ.KeypairDB.PublicKey(keypair.KeyID)
-	if err != nil {
-		log.Println("Error fetching the public key", err)
-		return "", err
-	}
-	pubKeyEncoded, err := asserts.EncodePublicKey(publicKey)
-	if err != nil {
-		log.Println("Error encoding the public key", err)
-		return "", err
-	}
-
-	accountKey, err := datastore.Environ.KeypairDB.SignAssertion(asserts.AccountKeyRequestType, headers, pubKeyEncoded, keypair.AuthorityID, keypair.KeyID, keypair.SealedKey)
-	if err != nil {
-		log.Printf("Error creating account-key assertion: %v", err)
-		return "", err
-	}
-
-	assert := asserts.Encode(accountKey)
-	return string(assert), nil
 }
 
 func requestStoreMacaroon(permissions []string) (string, error) {

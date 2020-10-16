@@ -36,6 +36,9 @@ func (srv Web) Router() *mux.Router {
 	// Start the web service router
 	router := mux.NewRouter()
 
+	router.Handle("/v1/login", Middleware(http.HandlerFunc(srv.LoginUser))).Methods("POST")
+	router.Handle("/v1/auth", Middleware(http.HandlerFunc(srv.Macaroon))).Methods("GET")
+
 	// Serve the static path
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(defaultDocRoot)))
 	router.PathPrefix("/static/").Handler(fs)

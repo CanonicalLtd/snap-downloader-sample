@@ -11,6 +11,7 @@ import (
 type Service interface {
 	LoginUser(email, password, otp, storeID, series string) error
 	SnapInfo(name string) (*ResponseSnapInfo, error)
+	Macaroon() (map[string]string, error)
 }
 
 // SnapStore interacts with a brand store
@@ -24,11 +25,15 @@ func NewStore(ds datastore.Datastore) *SnapStore {
 	// check if we have cached headers (with the store macaroon)
 	cfg, err := ds.SettingsGet("store", "headers")
 	if err != nil {
-		return &SnapStore{}
+		return &SnapStore{
+			Datastore: ds,
+		}
 	}
 	headers, err := readHeaders([]byte(cfg.Data))
 	if err != nil {
-		return &SnapStore{}
+		return &SnapStore{
+			Datastore: ds,
+		}
 	}
 
 	// use the cached headers, so no login needed
@@ -69,9 +74,31 @@ func (sto *SnapStore) LoginUser(email, password, otp, storeID, series string) er
 	return err
 }
 
+// Macaroon returns the stored macaroon from the data store
+func (sto *SnapStore) Macaroon() (map[string]string, error) {
+	cfg, err := sto.Datastore.SettingsGet("store", "headers")
+	if err != nil {
+		return nil, err
+	}
+
+	headers, err := readHeaders([]byte(cfg.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	// remove the actual macaroon from the response
+	delete(headers, "Authorization")
+	delete(headers, "Content-Type")
+	delete(headers, "Accept")
+
+	headers["Created"] = cfg.Created.String()
+	headers["Modified"] = cfg.Modified.String()
+	return headers, nil
+}
+
 // SnapInfo lists the snaps in a brand store
 func (sto SnapStore) SnapInfo(name string) (*ResponseSnapInfo, error) {
-	u := fmt.Sprintf("%sv2/snaps/info/%s", apiBaseURL, name) //info
+	u := fmt.Sprintf("%s/snaps/info/%s", apiBaseURL, name)
 	resp, err := submitGETRequest(u, sto.headers)
 	if err != nil {
 		log.Printf("Error fetching snap info: %v", err)

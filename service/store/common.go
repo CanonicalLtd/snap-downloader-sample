@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	apiBaseURL = "https://api.snapcraft.io/"
+	apiBaseURL = "https://api.snapcraft.io/v2"
 )
 
 func submitPOSTRequest(url string, headers map[string]string, data []byte) (*http.Response, error) {

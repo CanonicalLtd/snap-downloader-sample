@@ -22,10 +22,10 @@ const addSettingSQL = `
 	INSERT INTO settings (id, key, name, data) VALUES ($1, $2, $3, $4)
 `
 const updateSettingSQL = `
-	UPDATE settings SET data=$1 WHERE key=$2 and name=$3
+	UPDATE settings SET data=$1, modified=current_timestamp WHERE key=$2 and name=$3
 `
 const getSettingSQL = `
-	SELECT id, key, name, data
+	SELECT id, key, name, data, created, modified
 	FROM settings
 	WHERE key=$1 and name=$2
 `
@@ -49,7 +49,7 @@ func (db *DB) SettingsPut(key, name, data string) (string, error) {
 // SettingsGet fetches an existing config setting
 func (db *DB) SettingsGet(key, name string) (domain.ConfigSetting, error) {
 	r := domain.ConfigSetting{}
-	err := db.QueryRow(getSettingSQL, key, name).Scan(&r.ID, &r.Key, &r.Name, &r.Data)
+	err := db.QueryRow(getSettingSQL, key, name).Scan(&r.ID, &r.Key, &r.Name, &r.Data, &r.Created, &r.Modified)
 	switch {
 	case err == sql.ErrNoRows:
 		return r, err
