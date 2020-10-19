@@ -27,3 +27,26 @@ func Middleware(inner http.Handler) http.Handler {
 		inner.ServeHTTP(w, r)
 	})
 }
+
+// MiddlewareWithAuth handles authentication and redirects to the login page
+func (srv *Web) MiddlewareWithAuth(inner http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// log the request
+		Logger(start, r)
+
+		// check that we have a store macaroon
+		_, err := srv.Store.Macaroon()
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		inner.ServeHTTP(w, r)
+	})
+}
+
+func (srv *Web) authCheck(r *http.Request) {
+
+}

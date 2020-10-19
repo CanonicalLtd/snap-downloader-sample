@@ -33,7 +33,7 @@ func requestDo(r *http.Request, headers map[string]string) (*http.Response, erro
 func readHeaders(data []byte) (map[string]string, error) {
 	var headers map[string]string
 
-	if err := json.Unmarshal(data, headers); err != nil {
+	if err := json.Unmarshal(data, &headers); err != nil {
 		return nil, err
 	}
 

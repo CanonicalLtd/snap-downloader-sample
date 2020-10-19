@@ -94,7 +94,6 @@ func LoginUser(username, password, otp string, permissions []string) (string, st
 }
 
 func requestStoreMacaroon(permissions []string) (string, error) {
-
 	perm := Permissions{Permissions: permissions}
 	macaroonJSONData, err := json.Marshal(perm)
 	if err != nil {

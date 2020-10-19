@@ -4,13 +4,14 @@ import Header from "./components/Header";
 import Home from "./components/Home";
 import Footer from "./components/Footer";
 import api from "./components/api";
+import Login from "./components/Login";
 
 
 class App extends Component  {
     constructor(props) {
         super(props)
         this.state = {
-            macaroon: {},
+            macaroon: {'Snap-Device-Store': 'test-store'},
         }
     }
 
@@ -24,12 +25,19 @@ class App extends Component  {
         })
         .catch(e => {
             console.log(formatError(e.response.data))
-            this.setState({error: formatError(e.response.data), message: ''});
+            this.setState({error: formatError(e.response.data), message: '', macaroon: {}});
         })
     }
 
-    handleLogin = () => {
+    postLogin = () => {
         this.getAuth();
+    }
+
+    renderHome() {
+        if (!this.state.macaroon['Snap-Device-Store']) {
+            return <Login onLogin={this.postLogin} />
+        }
+        return <Home macaroon={this.state.macaroon} />
     }
 
     render() {
@@ -39,9 +47,8 @@ class App extends Component  {
             <div>
               <Header />
 
-              {r.section===''? <Home macaroon={this.state.macaroon} onLogin={this.handleLogin()} /> : ''}
-              {/*{r.section==='builds'? <BuildLog buildId={r.sectionId} /> : ''}*/}
-              {/*{r.section==='settings'? <Settings /> : ''}*/}
+              {r.section==='' ? this.renderHome() : ''}
+              {r.section==='login'? <Login onLogin={this.postLogin} /> : ''}
 
               <Footer />
             </div>

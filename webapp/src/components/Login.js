@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {T} from "./Utils";
 import {Row} from "@canonical/react-components";
+import Auth from './Auth';
 
 
 class Home extends Component {
@@ -10,16 +11,20 @@ class Home extends Component {
         }
     }
 
+    handleCreate = () => {
+        this.props.onLogin()
+    }
+
     render() {
         return (
             <div>
                 <Row>
-                    <h3>{T('home')}</h3>
-                    <p>{T('home-desc')}</p>
+                    <h3>{T('login-title')}</h3>
+                    <p>{T('login-desc')}</p>
                 </Row>
                 <section>
                     <Row>
-                        <h5>Store ID: {this.props.macaroon['Snap-Device-Store']} ({this.props.macaroon['Modified']})</h5>
+                        <Auth onClick={this.handleCreate} />
                     </Row>
                 </section>
             </div>

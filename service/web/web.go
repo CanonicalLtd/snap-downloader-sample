@@ -36,6 +36,7 @@ func (srv Web) Router() *mux.Router {
 	// Start the web service router
 	router := mux.NewRouter()
 
+	// unauthenticated routes
 	router.Handle("/v1/login", Middleware(http.HandlerFunc(srv.LoginUser))).Methods("POST")
 	router.Handle("/v1/auth", Middleware(http.HandlerFunc(srv.Macaroon))).Methods("GET")
 
@@ -44,6 +45,7 @@ func (srv Web) Router() *mux.Router {
 	router.PathPrefix("/static/").Handler(fs)
 
 	router.Handle("/", Middleware(http.HandlerFunc(srv.Index))).Methods("GET")
+	router.Handle("/login", Middleware(http.HandlerFunc(srv.Index))).Methods("GET")
 
 	return router
 }
