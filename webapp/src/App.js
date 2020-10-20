@@ -25,7 +25,7 @@ class App extends Component  {
         })
         .catch(e => {
             console.log(formatError(e.response.data))
-            this.setState({error: formatError(e.response.data), message: '', macaroon: {}});
+            this.setState({error: formatError(e.response.data), message: '', macaroon: {'Snap-Device-Store': 'test-store', 'Modified':'2020-02-02'}});
         })
     }
 

@@ -17,7 +17,9 @@ const createSettingsTableSQL string = `
 		modified         timestamp default current_timestamp
 	)
 `
-
+const indexSettingsSQL = `
+	CREATE UNIQUE INDEX IF NOT EXISTS idx_key_name on settings (key,name)
+`
 const addSettingSQL = `
 	INSERT INTO settings (id, key, name, data) VALUES ($1, $2, $3, $4)
 `

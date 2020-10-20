@@ -3,11 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/slimjim777/snap-downloader/service/cache"
 	"github.com/slimjim777/snap-downloader/service/datastore/sqlite"
 	"github.com/slimjim777/snap-downloader/service/store"
 	"github.com/slimjim777/snap-downloader/service/web"
 	"log"
 	"os"
+	"path"
 )
 
 var storeClient *store.SnapStore
@@ -19,9 +21,10 @@ func main() {
 	// set up the dependency chain
 	db, _ := sqlite.NewDatabase()
 	storeClient = store.NewStore(db)
+	cacheSrv := cache.NewService(getPath("cache"), db)
 
-	// Start the web service
-	srv := web.NewWebService(storeClient)
+	// start the web service
+	srv := web.NewWebService(storeClient, cacheSrv)
 	log.Fatal(srv.Start())
 }
 
@@ -55,4 +58,11 @@ func parseArgs() {
 	}
 
 	os.Exit(0)
+}
+
+func getPath(directory string) string {
+	if len(os.Getenv("SNAP_DATA")) > 0 {
+		return path.Join(os.Getenv("SNAP_DATA"), "../current", directory)
+	}
+	return directory
 }

@@ -39,9 +39,23 @@ func NewDatabase() (*DB, error) {
 	return store, nil
 }
 
-// CreateTables creates the database tables
+// CreateTables creates the database tables and indexes
 func (db *DB) CreateTables() error {
 	if _, err := db.Exec(createSettingsTableSQL); err != nil {
+		log.Println("Error on settings table:", err)
+		return err
+	}
+	if _, err := db.Exec(createSnapsTableSQL); err != nil {
+		log.Println("Error on snaps table:", err)
+		return err
+	}
+
+	if _, err := db.Exec(indexSettingsSQL); err != nil {
+		log.Println("Error on settings index:", err)
+		return err
+	}
+	if _, err := db.Exec(indexSnapsSQL); err != nil {
+		log.Println("Error on snaps index:", err)
 		return err
 	}
 	return nil

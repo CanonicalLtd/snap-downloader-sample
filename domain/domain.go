@@ -11,3 +11,12 @@ type ConfigSetting struct {
 	Created  time.Time `json:"created"`
 	Modified time.Time `json:"modified"`
 }
+
+// SnapCache is a snap to cache
+type SnapCache struct {
+	ID       string    `json:"id"`
+	Name     string    `json:"name"`
+	Arch     string    `json:"arch"`
+	Created  time.Time `json:"created"`
+	Modified time.Time `json:"modified"`
+}
