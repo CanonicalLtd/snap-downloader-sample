@@ -4,14 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/slimjim777/snap-downloader/service/datastore"
+	"github.com/snapcore/snapd/asserts"
 	"log"
+	"net/http"
 )
 
 // Service is the interface for the store
 type Service interface {
 	LoginUser(email, password, otp, storeID, series string) error
-	SnapInfo(name string) (*ResponseSnapInfo, error)
+	SnapInfo(name, arch string) (*ResponseSnapInfo, error)
 	Macaroon() (map[string]string, error)
+	GetSnapStream(snapURL string) (*http.Response, error)
+	Assertion(assertType, key string) (asserts.Assertion, error)
 }
 
 // SnapStore interacts with a brand store
@@ -97,9 +101,14 @@ func (sto *SnapStore) Macaroon() (map[string]string, error) {
 }
 
 // SnapInfo lists the snaps in a brand store
-func (sto SnapStore) SnapInfo(name string) (*ResponseSnapInfo, error) {
+func (sto SnapStore) SnapInfo(name, arch string) (*ResponseSnapInfo, error) {
+	headers := map[string]string{"Snap-Device-Architecture": arch}
+	for k, v := range sto.headers {
+		headers[k] = v
+	}
+
 	u := fmt.Sprintf("%s/snaps/info/%s", apiBaseURL, name)
-	resp, err := submitGETRequest(u, sto.headers)
+	resp, err := submitGETRequest(u, headers)
 	if err != nil {
 		log.Printf("Error fetching snap info: %v", err)
 		return nil, err
@@ -113,4 +122,31 @@ func (sto SnapStore) SnapInfo(name string) (*ResponseSnapInfo, error) {
 	}
 
 	return &response, nil
+}
+
+// GetSnapStream the snap file stream
+func (sto SnapStore) GetSnapStream(snapURL string) (*http.Response, error) {
+	return submitGETRequest(snapURL, sto.headers)
+}
+
+// Assertion retrieves an assertion from the store
+func (sto SnapStore) Assertion(assertType, key string) (asserts.Assertion, error) {
+	log.Printf("Download %s assertion\n", assertType)
+	headers := map[string]string{"Accept": "application/x.ubuntu.assertion"}
+	for k, v := range sto.headers {
+		if k != "Accept" {
+			headers[k] = v
+		}
+	}
+
+	u := fmt.Sprintf("%s/assertions/%s/%s", apiBaseURL, assertType, key)
+	resp, err := submitGETRequest(u, headers)
+	if err != nil {
+		log.Printf("Error fetching snap info: %v", err)
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	dec := asserts.NewDecoder(resp.Body)
+	return dec.Decode()
 }

@@ -15,6 +15,10 @@ import (
 var storeClient *store.SnapStore
 
 func main() {
+	var (
+		mode string
+	)
+	flag.StringVar(&mode, "mode", "web", "Mode of operation: web, watch")
 	// the arguments are used to authenticate with the store and store the macaroon
 	parseArgs()
 
@@ -22,6 +26,12 @@ func main() {
 	db, _ := sqlite.NewDatabase()
 	storeClient = store.NewStore(db)
 	cacheSrv := cache.NewService(getPath("cache"), db)
+
+	if mode == "watch" {
+		watchSrv := cache.NewWatchService(db, storeClient, cacheSrv)
+		watchSrv.Watch()
+		return
+	}
 
 	// start the web service
 	srv := web.NewWebService(storeClient, cacheSrv)
@@ -37,7 +47,6 @@ func parseArgs() {
 		storeID       string
 		series        string
 	)
-
 	flag.BoolVar(&configureOnly, "configure", false, "Configure the application and exit")
 	flag.StringVar(&email, "email", "", "Email to authenticate with the store")
 	flag.StringVar(&password, "password", "", "Password to authenticate with the store")
