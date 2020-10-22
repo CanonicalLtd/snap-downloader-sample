@@ -3,6 +3,7 @@ package store
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/slimjim777/snap-downloader/domain"
 	"github.com/slimjim777/snap-downloader/service/datastore"
 	"github.com/snapcore/snapd/asserts"
 	"log"
@@ -16,6 +17,7 @@ type Service interface {
 	Macaroon() (map[string]string, error)
 	GetSnapStream(snapURL string) (*http.Response, error)
 	Assertion(assertType, key string) (asserts.Assertion, error)
+	SnapAssertions(download *domain.SnapDownload) ([]asserts.Assertion, error)
 }
 
 // SnapStore interacts with a brand store
@@ -127,6 +129,28 @@ func (sto SnapStore) SnapInfo(name, arch string) (*ResponseSnapInfo, error) {
 // GetSnapStream the snap file stream
 func (sto SnapStore) GetSnapStream(snapURL string) (*http.Response, error) {
 	return submitGETRequest(snapURL, sto.headers)
+}
+
+// SnapAssertions fetches the assertions to install a snap
+func (sto SnapStore) SnapAssertions(download *domain.SnapDownload) ([]asserts.Assertion, error) {
+	assertRev, err := sto.Assertion("snap-revision", download.AssertionKey)
+	if err != nil {
+		return nil, err
+	}
+	assertDecl, err := sto.Assertion("snap-declaration", fmt.Sprintf("%s/%s", sto.headers["Snap-Device-Series"], assertRev.HeaderString("snap-id")))
+	if err != nil {
+		return nil, err
+	}
+	assertAcct, err := sto.Assertion("account", assertRev.HeaderString("developer-id"))
+	if err != nil {
+		return nil, err
+	}
+	assertAcctKey, err := sto.Assertion("account-key", assertRev.HeaderString("sign-key-sha3-384"))
+	if err != nil {
+		return nil, err
+	}
+
+	return []asserts.Assertion{assertAcctKey, assertAcct, assertDecl, assertRev}, nil
 }
 
 // Assertion retrieves an assertion from the store

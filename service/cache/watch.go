@@ -5,7 +5,6 @@ import (
 	"github.com/slimjim777/snap-downloader/domain"
 	"github.com/slimjim777/snap-downloader/service/datastore"
 	"github.com/slimjim777/snap-downloader/service/store"
-	"github.com/snapcore/snapd/asserts"
 	"log"
 	"time"
 )
@@ -101,29 +100,13 @@ func (srv *Watch) downloadSnap(download *domain.SnapDownload) error {
 	}
 
 	// get the snap assertions
-	assertRev, err := srv.store.Assertion("snap-revision", download.AssertionKey)
-	if err != nil {
-		return err
-	}
-	assertDecl, err := srv.store.Assertion("snap-declaration", fmt.Sprintf("16/%s", assertRev.HeaderString("snap-id")))
-	if err != nil {
-		return err
-	}
-	assertAcct, err := srv.store.Assertion("account", assertRev.HeaderString("developer-id"))
-	if err != nil {
-		return err
-	}
-	assertAcctKey, err := srv.store.Assertion("account-key", assertRev.HeaderString("sign-key-sha3-384"))
+	assertions, err := srv.store.SnapAssertions(download)
 	if err != nil {
 		return err
 	}
 
 	// store the assertion
-	if err := srv.cache.SnapAssertion([]asserts.Assertion{assertAcct, assertAcctKey, assertDecl, assertRev}, download); err != nil {
-		return err
-	}
-
-	return nil
+	return srv.cache.SnapAssertion(assertions, download)
 }
 
 func getStableRelease(info *store.ResponseSnapInfo, arch string) domain.SnapDownload {
