@@ -26,9 +26,10 @@ type SnapDownload struct {
 	Name         string `json:"name"`
 	Arch         string `json:"arch"`
 	Revision     int    `json:"revision"`
-	URL          string `json:"url"`
-	Sha3_384     string `json:"sha3-384"`
-	AssertionKey string `json:"key"`
+	URL          string `json:"url,omitempty"`
+	Assertion    string `json:"assertion"`
+	Sha3_384     string `json:"sha3-384,omitempty"`
+	AssertionKey string `json:"key,omitempty"`
 	Size         int64  `json:"size"`
 	Filename     string `json:"filename"`
 }

@@ -3,6 +3,7 @@ import api from "./api";
 import {formatError, T} from "./Utils";
 import {Row, Notification} from "@canonical/react-components";
 import SnapList from "./SnapList";
+import DownloadList from "./DownloadList";
 
 
 class Home extends Component {
@@ -10,17 +11,29 @@ class Home extends Component {
         super(props)
         this.state = {
             snaps: [{id:'abc', name:'test-snap', arch:'amd64'}],
+            downloads: [{name:'test-snap', arch:'amd64', filename: 'a.snap', assertion:'a.assert'}],
             delete: {},
         }
     }
 
     componentDidMount() {
         this.getSnaps()
+        this.getDownloads()
     }
 
     getSnaps() {
         api.snapsList().then(response => {
             this.setState({snaps: response.data.records})
+        })
+        .catch(e => {
+            console.log(formatError(e.response.data))
+            this.setState({error: formatError(e.response.data)});
+        })
+    }
+
+    getDownloads() {
+        api.snapsDownloadList().then(response => {
+            this.setState({downloads: response.data.records})
         })
         .catch(e => {
             console.log(formatError(e.response.data))
@@ -59,7 +72,13 @@ class Home extends Component {
                 }
                 <section>
                     <Row>
-                        <SnapList records={this.state.snaps} onCreate={this.handleSnapCreateClick} onDelete={this.handleDeleteClick} onDelete={this.handleSnapDelete} />
+                        <SnapList records={this.state.snaps} onCreate={this.handleSnapCreateClick} onDelete={this.handleSnapDelete} />
+                    </Row>
+                </section>
+
+                <section>
+                    <Row>
+                        <DownloadList records={this.state.downloads} />
                     </Row>
                 </section>
             </div>

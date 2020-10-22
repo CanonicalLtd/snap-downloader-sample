@@ -6,8 +6,12 @@ import (
 	"net/http"
 )
 
-// JSONHeader is the header for JSON responses
-const JSONHeader = "application/json; charset=UTF-8"
+// Content type headers
+const (
+	JSONHeader      = "application/json; charset=UTF-8"
+	AssertionHeader = "application/x.ubuntu.assertion"
+	StreamHeader    = "application/octet-stream"
+)
 
 // StandardResponse is the JSON response from an API method, indicating success or failure.
 type StandardResponse struct {

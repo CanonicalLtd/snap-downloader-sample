@@ -22,6 +22,14 @@ let service = {
     snapDelete: (id) => {
         return axios.delete(constants.baseUrl + 'snaps/' + id);
     },
+
+    snapDownload: (name, filename) => {
+        return axios.get(constants.baseUrl + 'downloads/' + name + '/' + filename);
+    },
+
+    snapsDownloadList: () => {
+        return axios.get(constants.baseUrl + 'downloads');
+    },
 }
 
 export default service

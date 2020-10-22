@@ -6,6 +6,8 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"net/http"
+	"os"
+	"path"
 )
 
 type snapAddRequest struct {
@@ -17,7 +19,7 @@ type snapAddRequest struct {
 func (srv Web) CacheSnapList(w http.ResponseWriter, r *http.Request) {
 	snaps, err := srv.Cache.SnapList()
 	if err != nil {
-		formatStandardResponse("cache-add", err.Error(), w)
+		formatStandardResponse("cache-list", err.Error(), w)
 		return
 	}
 
@@ -54,6 +56,40 @@ func (srv Web) CacheSnapDelete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formatStandardResponse("", "", w)
+}
+
+// CacheDownloadList lists downloads in the cache
+func (srv Web) CacheDownloadList(w http.ResponseWriter, r *http.Request) {
+	snaps, err := srv.Cache.ListDownloads()
+	if err != nil {
+		formatStandardResponse("cache-downloads", err.Error(), w)
+		return
+	}
+
+	formatRecordsResponse(snaps, w)
+}
+
+// CacheDownloadFile fetches the snap or assertion file
+func (srv Web) CacheDownloadFile(w http.ResponseWriter, r *http.Request) {
+	// Get the filename of the download
+	vars := mux.Vars(r)
+	filename := srv.Cache.DownloadPath(vars["name"], vars["filename"])
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+path.Base(filename))
+	if path.Ext(filename) == ".assert" {
+		w.Header().Set("Content-Type", AssertionHeader)
+	} else {
+		w.Header().Set("Content-Type", StreamHeader)
+	}
+
+	download, err := os.Open(filename)
+	if err != nil {
+		formatStandardResponse("download", err.Error(), w)
+		return
+	}
+	defer download.Close()
+
+	io.Copy(w, download)
 }
 
 func (srv Web) decodeSnapAdd(w http.ResponseWriter, r *http.Request) *snapAddRequest {

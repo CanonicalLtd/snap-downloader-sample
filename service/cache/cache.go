@@ -7,9 +7,12 @@ import (
 	"github.com/slimjim777/snap-downloader/service/datastore"
 	"github.com/snapcore/snapd/asserts"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -21,6 +24,8 @@ type Service interface {
 	CheckDownloadForSnap(snap, filename string) bool
 	DownloadSnap(resp *http.Response, download *domain.SnapDownload) error
 	SnapAssertion(data []asserts.Assertion, download *domain.SnapDownload) error
+	ListDownloads() ([]domain.SnapDownload, error)
+	DownloadPath(name, filename string) string
 }
 
 // Cache service for store snaps
@@ -62,6 +67,7 @@ func (c *Cache) CheckDownloadForSnap(snap, filename string) bool {
 
 // DownloadSnap performs the snap download stream
 func (c *Cache) DownloadSnap(resp *http.Response, download *domain.SnapDownload) error {
+	log.Printf("Download snap %s (%s)\n", download.Name, download.Arch)
 	// create the download path
 	if err := os.MkdirAll(path.Join(c.baseDir, download.Name), 0755); err != nil {
 		return err
@@ -99,6 +105,59 @@ func (c *Cache) SnapAssertion(assertions []asserts.Assertion, download *domain.S
 		}
 	}
 
+	return nil
+}
+
+// ListDownloads returns the snap downloads
+func (c *Cache) ListDownloads() (files []domain.SnapDownload, err error) {
+	if _, err := os.Stat(c.baseDir); err != nil {
+		return []domain.SnapDownload{}, nil
+	}
+
+	// get the snaps in the directory
+	err = filepath.Walk(c.baseDir, func(p string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if filepath.Ext(p) != ".snap" {
+			return nil
+		}
+
+		download := domain.SnapDownload{
+			Size:      info.Size(),
+			Filename:  info.Name(),
+			Assertion: strings.TrimSuffix(info.Name(), ".snap") + ".assert",
+		}
+		if err := snapFromFilename(&download); err != nil {
+			return err
+		}
+
+		files = append(files, download)
+		return nil
+	})
+	return files, nil
+}
+
+// DownloadPath returns the download path of the file
+func (c *Cache) DownloadPath(name, filename string) string {
+	return path.Join(c.baseDir, name, filename)
+}
+
+func snapFromFilename(download *domain.SnapDownload) error {
+	name := strings.TrimSuffix(download.Filename, ".snap")
+
+	parts := strings.SplitN(name, "_", 3)
+	if len(parts) != 3 {
+		return fmt.Errorf("filename is not in the expected format: %s", download.Filename)
+	}
+	revision, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return fmt.Errorf("filename is not in the expected format: %s", download.Filename)
+	}
+
+	download.Name = parts[0]
+	download.Revision = revision
+	download.Arch = parts[2]
 	return nil
 }
 

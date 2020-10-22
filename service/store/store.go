@@ -13,6 +13,7 @@ import (
 // Service is the interface for the store
 type Service interface {
 	LoginUser(email, password, otp, storeID, series string) error
+	GetHeaders() error
 	SnapInfo(name, arch string) (*ResponseSnapInfo, error)
 	Macaroon() (map[string]string, error)
 	GetSnapStream(snapURL string) (*http.Response, error)
@@ -80,6 +81,16 @@ func (sto *SnapStore) LoginUser(email, password, otp, storeID, series string) er
 	return err
 }
 
+// GetHeaders uses the store headers from the database
+func (sto *SnapStore) GetHeaders() error {
+	setting, err := sto.Datastore.SettingsGet("store", "headers")
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal([]byte(setting.Data), &sto.headers)
+}
+
 // Macaroon returns the stored macaroon from the data store
 func (sto *SnapStore) Macaroon() (map[string]string, error) {
 	cfg, err := sto.Datastore.SettingsGet("store", "headers")
@@ -103,7 +114,7 @@ func (sto *SnapStore) Macaroon() (map[string]string, error) {
 }
 
 // SnapInfo lists the snaps in a brand store
-func (sto SnapStore) SnapInfo(name, arch string) (*ResponseSnapInfo, error) {
+func (sto *SnapStore) SnapInfo(name, arch string) (*ResponseSnapInfo, error) {
 	headers := map[string]string{"Snap-Device-Architecture": arch}
 	for k, v := range sto.headers {
 		headers[k] = v
@@ -127,12 +138,12 @@ func (sto SnapStore) SnapInfo(name, arch string) (*ResponseSnapInfo, error) {
 }
 
 // GetSnapStream the snap file stream
-func (sto SnapStore) GetSnapStream(snapURL string) (*http.Response, error) {
+func (sto *SnapStore) GetSnapStream(snapURL string) (*http.Response, error) {
 	return submitGETRequest(snapURL, sto.headers)
 }
 
 // SnapAssertions fetches the assertions to install a snap
-func (sto SnapStore) SnapAssertions(download *domain.SnapDownload) ([]asserts.Assertion, error) {
+func (sto *SnapStore) SnapAssertions(download *domain.SnapDownload) ([]asserts.Assertion, error) {
 	assertRev, err := sto.Assertion("snap-revision", download.AssertionKey)
 	if err != nil {
 		return nil, err
@@ -154,7 +165,7 @@ func (sto SnapStore) SnapAssertions(download *domain.SnapDownload) ([]asserts.As
 }
 
 // Assertion retrieves an assertion from the store
-func (sto SnapStore) Assertion(assertType, key string) (asserts.Assertion, error) {
+func (sto *SnapStore) Assertion(assertType, key string) (asserts.Assertion, error) {
 	log.Printf("Download %s assertion\n", assertType)
 	headers := map[string]string{"Accept": "application/x.ubuntu.assertion"}
 	for k, v := range sto.headers {

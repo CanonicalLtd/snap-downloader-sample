@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	//tickInterval = 300
-	tickInterval = 5
+	tickInterval = 300
 )
 
 // WatchService interface for watching snaps
@@ -46,6 +45,9 @@ func (srv *Watch) Watch() {
 			log.Println("Error fetching snap list:", err)
 			break
 		}
+
+		// refresh the store headers, as a login may have happened
+		_ = srv.store.GetHeaders()
 
 		for _, r := range records {
 			log.Printf("Check snap: %s (%s)", r.Name, r.Arch)
