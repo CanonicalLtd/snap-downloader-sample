@@ -10,7 +10,7 @@ function DownloadActions(props) {
                 <img className="action" src="/static/images/download.svg" alt={T("download-snap")} />
             </Link>
             <Link href={'/v1/downloads/' + props.name + '/' + props.assertion} title={T("download-assertion")}>
-                <img className="action" src="/static/images/download.svg" alt={T("download-assertion")} />
+                <img className="action" src="/static/images/file-signature-solid.svg" alt={T("download-assertion")} />
             </Link>
         </div>
     );
