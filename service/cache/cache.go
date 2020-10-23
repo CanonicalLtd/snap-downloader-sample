@@ -26,6 +26,8 @@ type Service interface {
 	SnapAssertion(data []asserts.Assertion, download *domain.SnapDownload) error
 	ListDownloads() ([]domain.SnapDownload, error)
 	DownloadPath(name, filename string) string
+
+	Delta(name, arch string, fromRevision, toRevision int) (string, error)
 }
 
 // Cache service for store snaps

@@ -1,8 +1,9 @@
-package cache
+package watch
 
 import (
 	"fmt"
 	"github.com/slimjim777/snap-downloader/domain"
+	cache2 "github.com/slimjim777/snap-downloader/service/cache"
 	"github.com/slimjim777/snap-downloader/service/datastore"
 	"github.com/slimjim777/snap-downloader/service/store"
 	"log"
@@ -10,11 +11,11 @@ import (
 )
 
 const (
-	tickInterval = 300
+	tickInterval = 5
 )
 
-// WatchService interface for watching snaps
-type WatchService interface {
+// Service interface for watching snaps
+type Service interface {
 	Watch()
 }
 
@@ -22,11 +23,11 @@ type WatchService interface {
 type Watch struct {
 	data  datastore.Datastore
 	store store.Service
-	cache Service
+	cache cache2.Service
 }
 
 // NewWatchService creates a new watch service
-func NewWatchService(ds datastore.Datastore, store store.Service, cache Service) *Watch {
+func NewWatchService(ds datastore.Datastore, store store.Service, cache cache2.Service) *Watch {
 	return &Watch{
 		data:  ds,
 		store: store,

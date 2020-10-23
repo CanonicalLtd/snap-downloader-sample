@@ -6,6 +6,7 @@ import (
 	"github.com/slimjim777/snap-downloader/service/cache"
 	"github.com/slimjim777/snap-downloader/service/datastore/sqlite"
 	"github.com/slimjim777/snap-downloader/service/store"
+	"github.com/slimjim777/snap-downloader/service/watch"
 	"github.com/slimjim777/snap-downloader/service/web"
 	"log"
 	"os"
@@ -28,7 +29,7 @@ func main() {
 	cacheSrv := cache.NewService(getPath("cache"), db)
 
 	if mode == "watch" {
-		watchSrv := cache.NewWatchService(db, storeClient, cacheSrv)
+		watchSrv := watch.NewWatchService(db, storeClient, cacheSrv)
 		watchSrv.Watch()
 		return
 	}

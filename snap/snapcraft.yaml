@@ -55,6 +55,8 @@ parts:
     source: .
     build-packages:
       - gcc
+    stage-packages:
+      - xdelta3
 
   bin:
     source: launcher

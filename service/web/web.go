@@ -49,6 +49,7 @@ func (srv Web) Router() *mux.Router {
 	router.Handle("/v1/snaps/{id}", srv.MiddlewareWithAuth(http.HandlerFunc(srv.CacheSnapDelete))).Methods("DELETE")
 	router.Handle("/v1/downloads", srv.MiddlewareWithAuth(http.HandlerFunc(srv.CacheDownloadList))).Methods("GET")
 	router.Handle("/v1/downloads/{name}/{filename}", srv.MiddlewareWithAuth(http.HandlerFunc(srv.CacheDownloadFile))).Methods("GET")
+	router.Handle("/v1/delta/{name}/{arch}/{fromRevision:[0-9]+}/{toRevision:[0-9]+}", srv.MiddlewareWithAuth(http.HandlerFunc(srv.DeltaGet))).Methods("GET")
 
 	// serve the static path
 	fs := http.StripPrefix("/static/", http.FileServer(http.Dir(defaultDocRoot)))
