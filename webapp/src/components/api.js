@@ -30,6 +30,18 @@ let service = {
     snapsDownloadList: () => {
         return axios.get(constants.baseUrl + 'downloads');
     },
+
+    settingsInterval: () => {
+        return axios.get(constants.baseUrl + 'settings/interval');
+    },
+
+    settingsSetInterval: (interval) => {
+        return axios.post(constants.baseUrl + 'settings/interval', {value: interval});
+    },
+
+    settingsLastRun: () => {
+        return axios.get(constants.baseUrl + 'settings/lastrun');
+    },
 }
 
 export default service

@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import Footer from "./components/Footer";
 import api from "./components/api";
 import Login from "./components/Login";
+import Settings from "./components/Settings";
 
 
 class App extends Component  {
@@ -49,6 +50,7 @@ class App extends Component  {
 
               {r.section==='' ? this.renderHome() : ''}
               {r.section==='login'? <Login onLogin={this.postLogin} /> : ''}
+              {r.section==='settings' ? <Settings />: ''}
 
               <Footer />
             </div>

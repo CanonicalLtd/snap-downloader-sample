@@ -11,11 +11,15 @@ import (
 )
 
 const (
-	tickInterval = 5
+	tickInterval = 300
+	minInterval  = 5
 )
 
 // Service interface for watching snaps
 type Service interface {
+	GetInterval() int
+	SetInterval(newInterval int) error
+	LastRun() string
 	Watch()
 }
 
@@ -38,37 +42,64 @@ func NewWatchService(ds datastore.Datastore, store store.Service, cache cache2.S
 // Watch service to watch for snap updates
 func (srv *Watch) Watch() {
 	// on an interval...
-	ticker := time.NewTicker(time.Second * tickInterval)
-	for range ticker.C {
-		// get the snap list
-		records, err := srv.data.SnapsList()
-		if err != nil {
-			log.Println("Error fetching snap list:", err)
-			break
-		}
+	interval := srv.watchInterval()
+	ticker := time.NewTicker(interval)
 
-		// refresh the store headers, as a login may have happened
-		_ = srv.store.GetHeaders()
+	for {
+		select {
+		case <-ticker.C:
+			// run the tasks for this cycle
+			srv.runCycle()
 
-		for _, r := range records {
-			log.Printf("Check snap: %s (%s)", r.Name, r.Arch)
-			download, updateFound, err := srv.checkForUpdates(r)
-			if err != nil {
-				log.Println("Error checking snap:", err)
-				// check the next repo
-				continue
-			}
-			if !updateFound {
-				// no update so check the next repo
-				continue
-			}
-
-			if err := srv.downloadSnap(download); err != nil {
-				log.Println("Error checking snap:", err)
+			// check if we need to adjust the ticker interval
+			currentInterval := srv.watchInterval()
+			if interval != currentInterval {
+				interval = currentInterval
+				ticker.Stop()
+				ticker = time.NewTicker(interval)
 			}
 		}
 	}
 	ticker.Stop()
+}
+
+func (srv *Watch) watchInterval() time.Duration {
+	// get the setting from the data store
+	interval := srv.GetInterval()
+	return time.Duration(interval) * time.Second
+}
+
+func (srv *Watch) runCycle() {
+	// set the last run
+	_ = srv.setLastRun()
+
+	// get the snap list
+	records, err := srv.data.SnapsList()
+	if err != nil {
+		log.Println("Error fetching snap list:", err)
+		return
+	}
+
+	// refresh the store headers, as a login may have happened
+	_ = srv.store.GetHeaders()
+
+	for _, r := range records {
+		log.Printf("Check snap: %s (%s)", r.Name, r.Arch)
+		download, updateFound, err := srv.checkForUpdates(r)
+		if err != nil {
+			log.Println("Error checking snap:", err)
+			// check the next repo
+			continue
+		}
+		if !updateFound {
+			// no update so check the next repo
+			continue
+		}
+
+		if err := srv.downloadSnap(download); err != nil {
+			log.Println("Error checking snap:", err)
+		}
+	}
 }
 
 func (srv *Watch) checkForUpdates(r domain.SnapCache) (*domain.SnapDownload, bool, error) {

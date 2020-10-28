@@ -48,6 +48,8 @@ func snapFilename(name, arch string, revision int) string {
 
 func generateDelta(fromFile, toFile, outFile string) error {
 	out, err := exec.Command(xdelta, "-s", fromFile, toFile, outFile).CombinedOutput()
-	log.Println(string(out))
+	if err != nil {
+		log.Println(string(out))
+	}
 	return err
 }

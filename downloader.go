@@ -27,15 +27,15 @@ func main() {
 	db, _ := sqlite.NewDatabase()
 	storeClient = store.NewStore(db)
 	cacheSrv := cache.NewService(getPath("cache"), db)
+	watchSrv := watch.NewWatchService(db, storeClient, cacheSrv)
 
 	if mode == "watch" {
-		watchSrv := watch.NewWatchService(db, storeClient, cacheSrv)
 		watchSrv.Watch()
 		return
 	}
 
 	// start the web service
-	srv := web.NewWebService(storeClient, cacheSrv)
+	srv := web.NewWebService(storeClient, cacheSrv, watchSrv)
 	log.Fatal(srv.Start())
 }
 
