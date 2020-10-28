@@ -41,6 +41,13 @@ class App extends Component  {
         return <Home macaroon={this.state.macaroon} />
     }
 
+    renderSettings() {
+        if (!this.state.macaroon['Snap-Device-Store']) {
+            return <Settings />
+        }
+        return <Home macaroon={this.state.macaroon} />
+    }
+
     render() {
         const r = parseRoute()
 
@@ -50,7 +57,7 @@ class App extends Component  {
 
               {r.section==='' ? this.renderHome() : ''}
               {r.section==='login'? <Login onLogin={this.postLogin} /> : ''}
-              {r.section==='settings' ? <Settings />: ''}
+              {r.section==='settings' ? this.renderSettings(): ''}
 
               <Footer />
             </div>

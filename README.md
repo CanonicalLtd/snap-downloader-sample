@@ -1,21 +1,21 @@
-# Snap Downloader
+# Snap Cache
 
  ![Solution Overview](docs/SnapDownloader.jpg)
-Snap downloader creates a local cache of snaps and assertions for snaps in
+Snap Cache creates a local cache of snaps and assertions for snaps in
 a brand store. Why? Some devices have very limited network bandwidth e.g. a zigbee mesh,
 so it is not practical for them to download snaps directly from a snap store.
 
-Once snap downloader is authorized to access a brand store, snaps can be registered to
+Once Snap Cache is authorized to access a brand store, snaps can be registered to
 be watched. Whenever a new version appears at the brand store, the snap is downloaded to
 the local cache. The application provides an API for external applications to retrieve
 the cached files and distribute them to the low-bandwidth network.
 
-Snap downloader downloads the snap and its assertion from the brand store, so it can be
+Snap Cache downloads the snap and its assertion from the brand store, so it can be
 installed onto a device without using the `--dangerous` flag. An example of an
 that handles the installation of the assertion and snap is [Snap Sideloader](https://github.com/slimjim777/snap-sideloader).
 
 ## Web interface
-Snap downloader provides a web interface to help get started with the application. Just
+Snap Cache provides a web interface to help get started with the application. Just
 browse to http://edge-server-ip:8888/ e.g. http://localhost:8888 if testing locally.
 
 The web interface allows a user to:
