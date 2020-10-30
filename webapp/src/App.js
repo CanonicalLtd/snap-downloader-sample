@@ -12,7 +12,7 @@ class App extends Component  {
     constructor(props) {
         super(props)
         this.state = {
-            macaroon: {'Snap-Device-Store': 'test-store'},
+            macaroon: null,
         }
     }
 
@@ -26,7 +26,7 @@ class App extends Component  {
         })
         .catch(e => {
             console.log(formatError(e.response.data))
-            this.setState({error: formatError(e.response.data), message: '', macaroon: {'Snap-Device-Store': 'test-store', 'Modified':'2020-02-02'}});
+            this.setState({error: formatError(e.response.data), message: '', macaroon: null});
         })
     }
 
@@ -35,6 +35,9 @@ class App extends Component  {
     }
 
     renderHome() {
+        if (!this.state.macaroon) {
+            return <Login onLogin={this.postLogin} />
+        }
         if (!this.state.macaroon['Snap-Device-Store']) {
             return <Login onLogin={this.postLogin} />
         }
@@ -42,10 +45,13 @@ class App extends Component  {
     }
 
     renderSettings() {
-        if (!this.state.macaroon['Snap-Device-Store']) {
-            return <Settings />
+        if (!this.state.macaroon) {
+            return <Login onLogin={this.postLogin} />
         }
-        return <Home macaroon={this.state.macaroon} />
+        if (!this.state.macaroon['Snap-Device-Store']) {
+            return <Login onLogin={this.postLogin} />
+        }
+        return <Settings />
     }
 
     render() {
