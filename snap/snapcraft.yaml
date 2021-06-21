@@ -1,6 +1,7 @@
+
 name: snap-cache
-base: core18
-version: '0.1'
+base: core20
+version: '0.2'
 summary: Keep a local cache of brand store snaps
 description: |
   In some networks, downloaded snaps from each device is an expensive operation e.g. for
