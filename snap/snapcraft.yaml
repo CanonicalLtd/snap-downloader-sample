@@ -1,6 +1,7 @@
+
 name: snap-cache
-base: core18
-version: '0.1'
+base: core20
+version: '0.2'
 summary: Keep a local cache of brand store snaps
 description: |
   In some networks, downloaded snaps from each device is an expensive operation e.g. for
@@ -45,10 +46,6 @@ parts:
       cp -r build/static/js $SNAPCRAFT_PART_INSTALL/static/
       cp -r build/static/images $SNAPCRAFT_PART_INSTALL/static/
       cp build/* $SNAPCRAFT_PART_INSTALL/static/ || :
-    build-packages:
-      - curl
-      - python-minimal
-      - python-dev
 
   application:
     plugin: go
@@ -62,3 +59,8 @@ parts:
     source: launcher
     plugin: dump
 
+
+build-packages:
+  - curl
+  - python3-minimal
+  - python3-dev
